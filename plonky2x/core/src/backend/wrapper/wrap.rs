@@ -3,6 +3,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use log::{debug, info};
+use plonky2::iop::target::BoolTarget;
 use plonky2::iop::witness::{PartialWitness, WitnessWrite};
 use plonky2::plonk::circuit_data::{
     CommonCircuitData, VerifierCircuitTarget, VerifierOnlyCircuitData,
@@ -80,8 +81,8 @@ where
         // We must truncate the top 3 bits because in the gnark-plonky2-verifier, the input_hash
         // and output_hash are both represented as 1 field element in the BN254 field to reduce
         // onchain verification costs.
-        let input_hash_zeroed = hash_builder.mask_be_bits(input_hash, 3);
-        let output_hash_zeroed = hash_builder.mask_be_bits(output_hash, 3);
+        let input_hash_zeroed = hash_builder.mask_be_bits(input_hash, 193);
+        let output_hash_zeroed = hash_builder.mask_be_bits(output_hash, 193);
 
         hash_builder.watch(&input_hash_zeroed, "input_hash_truncated");
         hash_builder.watch(&output_hash_zeroed, "output_hash_truncated");
@@ -89,28 +90,32 @@ where
         let input_vars = input_hash_zeroed
             .as_bytes()
             .iter()
-            .map(|b| b.to_variable(&mut hash_builder))
-            .collect::<Vec<Variable>>();
+            .skip(24)
+            .map(|b| b.variables().into_iter().map(|y| BoolTarget::new_unsafe(y.0)))
+            .flatten()
+            .skip(1)
+            .collect::<Vec<BoolTarget>>();
 
         let output_vars = output_hash_zeroed
             .as_bytes()
             .iter()
-            .map(|b| b.to_variable(&mut hash_builder))
-            .collect::<Vec<Variable>>();
+            .skip(24)
+            .map(|b| b.variables().into_iter().map(|y| BoolTarget::new_unsafe(y.0)))
+            .flatten()
+            .skip(1)
+            .collect::<Vec<BoolTarget>>();
 
-        hash_builder.watch_slice(&input_vars, "input_hash_truncated as vars");
-        hash_builder.watch_slice(&output_vars, "output_hash_truncated as vars");
+        let input_var = hash_builder.api.le_sum(input_vars.iter());
+        let output_var = hash_builder.api.le_sum(output_vars.iter());
+
+        // hash_builder.watch_slice(&input_vars, "input_hash_truncated as vars");
+        // hash_builder.watch_slice(&output_vars, "output_hash_truncated as vars");
 
         // Write input_hash, output_hash to public_inputs. In the gnark-plonky2-verifier, these
         // 64 bytes get summed to 2 field elements that correspond to the input_hash and output_hash
         // respectively as public inputs.
-        input_vars
-            .clone()
-            .into_iter()
-            .chain(output_vars)
-            .for_each(|v| {
-                hash_builder.write(v);
-            });
+        hash_builder.write(Variable::from(input_var));
+        hash_builder.write(Variable::from(output_var));
         let hash_circuit = hash_builder.build();
 
         // An inner recursion to standardize the degree.
@@ -124,7 +129,6 @@ where
             &hash_verifier_target,
             &hash_circuit.data.common,
         );
-        assert_eq!(hash_proof_target.public_inputs.len(), 32usize * 2);
 
         recursive_builder
             .api
