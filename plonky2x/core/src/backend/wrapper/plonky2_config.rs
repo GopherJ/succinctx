@@ -9,7 +9,7 @@ use plonky2::field::goldilocks_field::GoldilocksField;
 use plonky2::field::types::Field;
 use plonky2::hash::hash_types::RichField;
 use plonky2::hash::poseidon::{PoseidonHash, PoseidonPermutation};
-use plonky2::plonk::config::{GenericConfig, GenericHashOut, Hasher};
+use plonky2::plonk::config::{GenericConfig, GenericConfigStandardMerkleHasher, GenericHashOut, Hasher};
 use serde::de::Visitor;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -24,6 +24,7 @@ impl GenericConfig<2> for PoseidonBN128GoldilocksConfig {
     type FE = QuadraticExtension<Self::F>;
     type Hasher = PoseidonBN128Hash;
     type InnerHasher = PoseidonHash;
+    type MerkleHasher = GenericConfigStandardMerkleHasher<Self::F, Self::Hasher>;
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

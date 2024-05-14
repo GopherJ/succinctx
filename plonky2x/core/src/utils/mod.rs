@@ -2,6 +2,7 @@ use std::sync::Once;
 pub mod eth;
 pub mod hash;
 pub mod lido;
+pub mod math;
 pub mod poseidon;
 pub mod proof;
 pub mod reqwest;

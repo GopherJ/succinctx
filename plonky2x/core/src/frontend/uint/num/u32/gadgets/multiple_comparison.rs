@@ -4,10 +4,10 @@ use plonky2::field::extension::Extendable;
 use plonky2::hash::hash_types::RichField;
 use plonky2::iop::target::{BoolTarget, Target};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
-use plonky2::util::ceil_div_usize;
 
 use crate::frontend::uint::num::u32::gadgets::arithmetic_u32::U32Target;
 use crate::frontend::uint::num::u32::gates::comparison::ComparisonGate;
+use crate::utils::math::ceil_div_usize;
 
 /// Computes the less than or equal to operation between a and b encoded as base-`2^num_bits` limbs.
 ///
