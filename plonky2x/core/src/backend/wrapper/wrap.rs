@@ -128,7 +128,7 @@ where
 
         recursive_builder
             .api
-            .register_public_inputs(&hash_proof_target.public_inputs);
+            .register_public_inputs(&circuit_proof_target.public_inputs);
 
         let recursive_circuit = recursive_builder.build();
         debug!(
