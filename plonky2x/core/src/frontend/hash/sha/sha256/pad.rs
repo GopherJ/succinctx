@@ -1,7 +1,6 @@
 use array_macro::array;
-use plonky2::util::ceil_div_usize;
 
-use crate::prelude::*;
+use crate::{prelude::*, utils::math::ceil_div_usize};
 
 pub const SHA256_CHUNK_SIZE_BYTES: usize = 64;
 pub const SHA256_INPUT_LENGTH_BYTE_SIZE: usize = 8;

@@ -21,7 +21,9 @@ use plonky2::plonk::vars::{
     EvaluationVarsBasePacked,
 };
 use plonky2::util::serialization::{Buffer, IoResult, Read, Write};
-use plonky2::util::{bits_u64, ceil_div_usize};
+use plonky2::util::bits_u64;
+
+use crate::utils::math::ceil_div_usize;
 
 /// A gate for checking that one value is less than or equal to another.
 #[derive(Clone, Debug, Default)]
