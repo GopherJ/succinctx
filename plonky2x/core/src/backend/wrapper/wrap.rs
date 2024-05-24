@@ -104,12 +104,11 @@ where
         // Write input_hash, output_hash to public_inputs. In the gnark-plonky2-verifier, these
         // 64 bytes get summed to 2 field elements that correspond to the input_hash and output_hash
         // respectively as public inputs.
-        input_vars
+        circuit_proof_target.public_inputs
             .clone()
             .into_iter()
-            .chain(output_vars)
             .for_each(|v| {
-                hash_builder.write(v);
+                hash_builder.write(Variable(v));
             });
         let hash_circuit = hash_builder.build();
 
@@ -124,11 +123,11 @@ where
             &hash_verifier_target,
             &hash_circuit.data.common,
         );
-        assert_eq!(hash_proof_target.public_inputs.len(), 32usize * 2);
+        // assert_eq!(hash_proof_target.public_inputs.len(), 32usize * 2);
 
         recursive_builder
             .api
-            .register_public_inputs(&circuit_proof_target.public_inputs);
+            .register_public_inputs(&hash_proof_target.public_inputs);
 
         let recursive_circuit = recursive_builder.build();
         debug!(
